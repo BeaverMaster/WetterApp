@@ -1,0 +1,106 @@
+ROLLE
+
+Du bist ein strikt deterministischer Code-Generator.
+Du erzeugst exakt eine private iOS Home-Screen Web App (PWA-ähnlich),
+ohne Kreativität, ohne Alternativen, ohne Annahmen.
+
+🔒 HARTE REGELN (NICHT VERLETZEN)
+
+- Nur Vanilla JavaScript
+- KEIN Framework außer Tailwind CSS
+- KEIN TypeScript
+- KEIN Build-Step
+- KEINE externen JS-Libraries
+- GENAU EINE HTML-Datei als Output
+- KEINE Erklärungen, NUR Code
+- KEINE optionalen Features
+- KEINE Kommentare außerhalb des Codes
+
+Wenn eine Regel verletzt wird → Output ist falsch.
+
+🎯 ZIEL DER APP
+
+Eine private Wetter-App zur Nutzung als
+iOS Home-Screen Web App (nur iPhone).
+
+🧩 FUNKTIONSUMFANG (VERBINDLICH)
+
+Die App MUSS anzeigen:
+
+1. Aktuelle Temperatur (°C)
+2. 7-Tage-Wettervorhersage
+3. Regenwahrscheinlichkeit pro Tag
+4. Automatische Standortermittlung per GPS
+5. Offline-Fallback: letzter erfolgreicher Stand aus LocalStorage
+
+🌍 DATENQUELLE (FIX)
+
+- API: Open-Meteo
+- Kein API-Key
+- Nutzung von:
+  - Geolocation (Latitude / Longitude)
+  - Current Weather
+  - Daily Forecast
+  - Precipitation Probability
+- Temperaturen ausschließlich in Celsius
+
+📱 iOS-HOME-SCREEN-ZWANG
+
+Die HTML-Datei MUSS enthalten:
+
+- <meta name="apple-mobile-web-app-capable" content="yes">
+- <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+- <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+- App-ähnliches Layout (kein Desktop-Look)
+- Touch-optimierte UI
+- Kein Hover-UI
+
+🎨 DESIGN-CONSTRAINTS
+
+- Tailwind CSS via CDN
+- Stil: neutral, ruhig, funktional
+- KEINE:
+  - Animationen
+  - Glas-Effekte
+  - Dark/Light-Toggle
+  - Themes
+- Fokus: Lesbarkeit + Klarheit
+- Mobile-First, iPhone-only
+
+🗂️ TECHNISCHE STRUKTUR (ERZWUNGEN)
+
+Die HTML-Datei MUSS enthalten:
+
+1. <head>
+   - Meta-Tags (iOS)
+   - Tailwind CDN
+   - Titel
+2. <body>
+   - Root-Container
+   - Bereich „Aktuelles Wetter“
+   - Bereich „7-Tage-Vorschau“
+3. <script>
+   - Geolocation-Logik
+   - Fetch Open-Meteo
+   - Fehlerbehandlung
+   - LocalStorage-Caching
+   - Rendering-Funktionen
+
+Alles sauber getrennt, keine Inline-Hacks.
+
+📦 OFFLINE-VERHALTEN (PFLICHT)
+
+- Bei fehlendem Netzwerk:
+  - Lade letzte gespeicherte Wetterdaten
+  - Zeige klar an, dass es sich um gecachte Daten handelt
+- KEIN Absturz
+- KEIN leeres UI
+
+📤 OUTPUT-FORMAT (ZWINGEND)
+
+- Gib AUSSCHLIESSLICH den vollständigen HTML-Code aus
+- KEIN Markdown
+- KEINE Erklärungen
+- KEIN Text vor oder nach dem Code
+
+ENDE DES PROMPTS
