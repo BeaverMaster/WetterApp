@@ -11,21 +11,25 @@
   <!-- Tailwind CSS via CDN – einzige externe Abhängigkeit -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    /* Seiten-Scroll komplett unterbinden – App füllt exakt den Viewport */
+    html, body {
+      height: 100%;
+      height: -webkit-fill-available;
+      overflow: hidden;
+    }
+
     /* Systemschrift für iOS-natives Erscheinungsbild */
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      /* Verhindert Überlauf und sichert Fullscreen-Feeling */
       margin: 0;
       padding: 0;
-      min-height: 100vh;
-      min-height: -webkit-fill-available;
     }
 
-    /* Blauer Verlauf als Haupthintergrund der gesamten App */
+    /* Blauer Verlauf als Haupthintergrund, exakt Viewport-Höhe */
     .bg-gradient {
       background: linear-gradient(180deg, #1e3a8a 0%, #2563eb 50%, #3b82f6 100%);
-      min-height: 100vh;
-      min-height: -webkit-fill-available;
+      height: 100%;
+      height: -webkit-fill-available;
     }
 
     /* Safe-Area-Insets für iPhone-Notch und Home-Indicator */
@@ -44,48 +48,51 @@
 </head>
 <body>
   <!-- Root-Container: blauer Verlauf + Safe-Area-Padding -->
-  <div id="app" class="bg-gradient safe-area text-white">
+  <div id="app" class="bg-gradient safe-area text-white h-full overflow-hidden">
 
     <!-- Ladebildschirm – wird beim Start angezeigt, bis Daten verfügbar sind -->
-    <div id="loading" class="flex flex-col items-center justify-center min-h-screen px-6">
+    <div id="loading" class="flex flex-col items-center justify-center h-full px-6">
       <p class="text-xl" style="opacity:0.8;">Wetterdaten werden geladen…</p>
     </div>
 
     <!-- Fehleranzeige – wird nur bei kritischen Fehlern ohne Cache sichtbar -->
-    <div id="error" class="hidden flex flex-col items-center justify-center min-h-screen px-6">
+    <div id="error" class="hidden flex flex-col items-center justify-center h-full px-6">
       <p class="text-xl mb-2">Fehler</p>
       <p id="error-message" class="text-base text-center" style="opacity:0.7;"></p>
     </div>
 
-    <!-- Hauptinhalt – einspaltiges Dashboard-Layout -->
-    <div id="content" class="hidden min-h-screen px-6 pt-12 pb-8">
+    <!-- Hauptinhalt – Flexbox-Layout, füllt den Viewport exakt -->
+    <div id="content" class="hidden flex flex-col h-full px-6 pt-12 pb-8 overflow-hidden">
 
-      <!-- Standortname -->
-      <p id="location-name" class="text-center text-base mb-1" style="opacity:0.7;"></p>
+      <!-- Oberer Bereich: aktuelles Wetter (feste Größe, schrumpft nicht) -->
+      <div class="shrink-0">
+        <!-- Standortname -->
+        <p id="location-name" class="text-center text-base mb-1" style="opacity:0.7;"></p>
 
-      <!-- Hinweis auf gecachte Daten bei Offline-Nutzung -->
-      <p id="cache-hint" class="hidden text-center text-sm mb-2" style="opacity:0.5;">Gespeicherte Daten</p>
+        <!-- Hinweis auf gecachte Daten bei Offline-Nutzung -->
+        <p id="cache-hint" class="hidden text-center text-sm mb-2" style="opacity:0.5;">Gespeicherte Daten</p>
 
-      <!-- Aktuelles Wetter: große Temperatur + Icon -->
-      <div class="flex items-center justify-center mt-4 mb-2">
-        <span id="current-icon" class="text-6xl mr-4"></span>
-        <span id="current-temp" class="text-8xl font-thin tracking-tighter"></span>
+        <!-- Aktuelles Wetter: große Temperatur + Icon -->
+        <div class="flex items-center justify-center mt-4 mb-2">
+          <span id="current-icon" class="text-6xl mr-4"></span>
+          <span id="current-temp" class="text-8xl font-thin tracking-tighter"></span>
+        </div>
+
+        <!-- Wetterbeschreibung -->
+        <p id="current-desc" class="text-center text-lg mb-4" style="opacity:0.8;"></p>
+
+        <!-- Metazeile: Regenwahrscheinlichkeit und Windgeschwindigkeit -->
+        <div class="flex justify-center gap-8 mb-6">
+          <span id="current-rain" class="text-base" style="opacity:0.6;"></span>
+          <span id="current-wind" class="text-base" style="opacity:0.6;"></span>
+        </div>
+
+        <!-- Abschnittstitel für die 7-Tage-Vorschau -->
+        <p class="text-sm uppercase tracking-widest mb-3" style="opacity:0.5;">7-Tage-Vorschau</p>
       </div>
 
-      <!-- Wetterbeschreibung -->
-      <p id="current-desc" class="text-center text-lg mb-4" style="opacity:0.8;"></p>
-
-      <!-- Metazeile: Regenwahrscheinlichkeit und Windgeschwindigkeit -->
-      <div class="flex justify-center gap-8 mb-10">
-        <span id="current-rain" class="text-base" style="opacity:0.6;"></span>
-        <span id="current-wind" class="text-base" style="opacity:0.6;"></span>
-      </div>
-
-      <!-- Abschnittstitel für die 7-Tage-Vorschau -->
-      <p class="text-sm uppercase tracking-widest mb-4" style="opacity:0.5;">7-Tage-Vorschau</p>
-
-      <!-- Container für die Tageszeilen – wird per JS befüllt -->
-      <div id="forecast"></div>
+      <!-- Unterer Bereich: 7-Tage-Liste füllt den Rest, scrollt intern falls nötig -->
+      <div id="forecast" class="flex-1 overflow-y-auto" style="-webkit-overflow-scrolling: touch;"></div>
     </div>
   </div>
 
