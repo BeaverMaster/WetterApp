@@ -40,11 +40,6 @@
       height: var(--app-height);
     }
 
-    /* Alle Vollbild-Container nutzen die gemessene Höhe statt h-full */
-    .app-height {
-      height: var(--app-height);
-    }
-
     /* Safe-Area-Insets für iPhone-Notch und Home-Indicator */
     .safe-area {
       padding-top: env(safe-area-inset-top);
@@ -61,24 +56,24 @@
 </head>
 <body>
   <!-- Root-Container: blauer Verlauf + Safe-Area-Padding -->
-  <div id="app" class="bg-gradient safe-area text-white overflow-hidden">
+  <div id="app" class="bg-gradient safe-area text-white overflow-hidden flex flex-col">
 
     <!-- Ladebildschirm – wird beim Start angezeigt, bis Daten verfügbar sind -->
-    <div id="loading" class="flex flex-col items-center justify-center app-height px-6">
+    <div id="loading" class="flex flex-col items-center justify-center flex-1 px-6">
       <p class="text-xl" style="opacity:0.8;">Wetterdaten werden geladen…</p>
     </div>
 
     <!-- Fehleranzeige – wird nur bei kritischen Fehlern ohne Cache sichtbar -->
-    <div id="error" class="hidden flex flex-col items-center justify-center app-height px-6">
+    <div id="error" class="hidden flex flex-col items-center justify-center flex-1 px-6">
       <p class="text-xl mb-2">Fehler</p>
       <p id="error-message" class="text-base text-center" style="opacity:0.7;"></p>
     </div>
 
-    <!-- Hauptinhalt – Flexbox-Layout, füllt den Viewport exakt -->
-    <div id="content" class="hidden flex flex-col app-height px-6 overflow-hidden">
+    <!-- Hauptinhalt – füllt den verbleibenden Platz nach Safe-Area-Padding -->
+    <div id="content" class="hidden flex-1 px-6 overflow-hidden">
 
-      <!-- Oberer Bereich: aktuelles Wetter (feste Größe, schrumpft nicht) -->
-      <div class="shrink-0">
+      <!-- Oberer Bereich: aktuelles Wetter -->
+      <div>
         <!-- Standortname -->
         <p id="location-name" class="text-center text-base mb-1" style="opacity:0.7;"></p>
 
@@ -86,26 +81,26 @@
         <p id="cache-hint" class="hidden text-center text-sm mb-1" style="opacity:0.5;">Gespeicherte Daten</p>
 
         <!-- Aktuelles Wetter: große Temperatur + Icon -->
-        <div class="flex items-center justify-center mt-2 mb-1">
-          <span id="current-icon" class="text-5xl mr-3"></span>
-          <span id="current-temp" class="text-7xl font-thin tracking-tighter"></span>
+        <div class="flex items-center justify-center mt-4 mb-2">
+          <span id="current-icon" class="text-6xl mr-4"></span>
+          <span id="current-temp" class="text-8xl font-thin tracking-tighter"></span>
         </div>
 
         <!-- Wetterbeschreibung -->
-        <p id="current-desc" class="text-center text-base mb-2" style="opacity:0.8;"></p>
+        <p id="current-desc" class="text-center text-lg mb-4" style="opacity:0.8;"></p>
 
         <!-- Metazeile: Regenwahrscheinlichkeit und Windgeschwindigkeit -->
-        <div class="flex justify-center gap-8 mb-4">
-          <span id="current-rain" class="text-sm" style="opacity:0.6;"></span>
-          <span id="current-wind" class="text-sm" style="opacity:0.6;"></span>
+        <div class="flex justify-center gap-8 mb-6">
+          <span id="current-rain" class="text-base" style="opacity:0.6;"></span>
+          <span id="current-wind" class="text-base" style="opacity:0.6;"></span>
         </div>
 
         <!-- Abschnittstitel für die 7-Tage-Vorschau -->
-        <p class="text-sm uppercase tracking-widest mb-2" style="opacity:0.5;">7-Tage-Vorschau</p>
+        <p class="text-sm uppercase tracking-widest mb-3" style="opacity:0.5;">7-Tage-Vorschau</p>
       </div>
 
       <!-- Unterer Bereich: 7-Tage-Zeilen verteilen sich gleichmäßig über den restlichen Platz -->
-      <div id="forecast" class="flex-1 flex flex-col justify-evenly"></div>
+      <div id="forecast"></div>
     </div>
   </div>
 
