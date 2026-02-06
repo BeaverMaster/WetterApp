@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>App Icon Generator</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #111;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      gap: 24px;
+    }
+    canvas {
+      border-radius: 22%;
+    }
+    /* Download-Link als Button gestylt */
+    a.download {
+      color: #3b82f6;
+      text-decoration: none;
+      font-size: 16px;
+      padding: 10px 24px;
+      border: 1px solid #3b82f6;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Canvas für das App-Icon – 1024x1024 für Apple-Kompatibilität -->
+  <canvas id="icon" width="1024" height="1024"></canvas>
+  <a id="downloadLink" class="download">Icon herunterladen (PNG)</a>
+
+  <script>
+    // ============================================================
+    // App-Icon mit Canvas zeichnen
+    // Erzeugt ein 1024x1024 Icon im Stil der Wetter-App:
+    // Blauer Verlauf + stilisierte Sonne mit Wolke
+    // ============================================================
+    function generateAppIcon() {
+      const canvas = document.getElementById('icon');
+      const ctx = canvas.getContext('2d');
+      const size = canvas.width;
+
+      // -- Hintergrund: blauer Verlauf passend zur App --
+      const bgGradient = ctx.createLinearGradient(0, 0, 0, size);
+      bgGradient.addColorStop(0, '#1e3a8a');
+      bgGradient.addColorStop(0.5, '#2563eb');
+      bgGradient.addColorStop(1, '#3b82f6');
+      ctx.fillStyle = bgGradient;
+      ctx.fillRect(0, 0, size, size);
+
+      // -- Sonne: gelber Kreis mit sanftem Glow-Effekt --
+      const sunX = 420;
+      const sunY = 340;
+      const sunRadius = 140;
+
+      // Äußerer Glow der Sonne für Tiefenwirkung
+      const sunGlow = ctx.createRadialGradient(sunX, sunY, sunRadius * 0.5, sunX, sunY, sunRadius * 2.2);
+      sunGlow.addColorStop(0, 'rgba(250, 204, 21, 0.4)');
+      sunGlow.addColorStop(1, 'rgba(250, 204, 21, 0)');
+      ctx.fillStyle = sunGlow;
+      ctx.beginPath();
+      ctx.arc(sunX, sunY, sunRadius * 2.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Sonnenkörper mit Verlauf von Gelb zu Orange
+      const sunGradient = ctx.createRadialGradient(sunX - 30, sunY - 30, 0, sunX, sunY, sunRadius);
+      sunGradient.addColorStop(0, '#fde68a');
+      sunGradient.addColorStop(1, '#facc15');
+      ctx.fillStyle = sunGradient;
+      ctx.beginPath();
+      ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // -- Wolke: weiße, abgerundete Form aus mehreren Kreisen --
+      // Verdeckt den unteren Teil der Sonne für Tiefe
+      drawCloud(ctx, 512, 560, 1.0);
+
+      // -- Download-Link vorbereiten --
+      const link = document.getElementById('downloadLink');
+      link.href = canvas.toDataURL('image/png');
+      link.download = 'AppIcon.png';
+    }
+
+    // ============================================================
+    // Wolke zeichnen: zusammengesetzt aus überlappenden Kreisen
+    // Erzeugt eine natürlich wirkende, weiche Wolkenform
+    // ============================================================
+    function drawCloud(ctx, cx, cy, scale) {
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+
+      // Einzelne Kreise bilden zusammen die Wolkensilhouette
+      const circles = [
+        { x: -150, y: 20,  r: 100 },  // links
+        { x: -60,  y: -40, r: 130 },  // links-mitte oben
+        { x: 60,   y: -50, r: 140 },  // rechts-mitte oben
+        { x: 160,  y: 10,  r: 110 },  // rechts
+        { x: 0,    y: 30,  r: 120 },  // mitte unten
+      ];
+
+      ctx.beginPath();
+      circles.forEach(function(c) {
+        const x = cx + c.x * scale;
+        const y = cy + c.y * scale;
+        const r = c.r * scale;
+        ctx.moveTo(x + r, y);
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+      });
+      ctx.fill();
+
+      // Flache Unterseite der Wolke für saubere Silhouette
+      ctx.fillRect(cx - 260 * scale, cy + 20 * scale, 520 * scale, 80 * scale);
+    }
+
+    // Icon beim Laden der Seite erzeugen
+    generateAppIcon();
+  </script>
+</body>
+</html>
