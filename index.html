@@ -13,11 +13,15 @@
   <!-- Tailwind CSS via CDN – einzige externe Abhängigkeit -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Seiten-Scroll komplett unterbinden – App füllt exakt den Viewport */
+    /* --app-height wird per JS auf window.innerHeight gesetzt.
+       Das umgeht alle iOS-Viewport-Bugs mit 100vh / -webkit-fill-available */
+    :root {
+      --app-height: 100vh;
+    }
+
+    /* Seiten-Scroll komplett unterbinden */
     html, body {
-      height: 100%;
-      height: 100vh;
-      height: -webkit-fill-available;
+      height: var(--app-height);
       overflow: hidden;
       /* Hintergrundfarbe als Absicherung, damit kein Weiß durchscheint */
       background: #3b82f6;
@@ -30,12 +34,15 @@
       padding: 0;
     }
 
-    /* Blauer Verlauf als Haupthintergrund, exakt Viewport-Höhe */
+    /* Blauer Verlauf als Haupthintergrund, exakt gemessene Viewport-Höhe */
     .bg-gradient {
       background: linear-gradient(180deg, #1e3a8a 0%, #2563eb 50%, #3b82f6 100%);
-      height: 100%;
-      height: 100vh;
-      height: -webkit-fill-available;
+      height: var(--app-height);
+    }
+
+    /* Alle Vollbild-Container nutzen die gemessene Höhe statt h-full */
+    .app-height {
+      height: var(--app-height);
     }
 
     /* Safe-Area-Insets für iPhone-Notch und Home-Indicator */
@@ -54,21 +61,21 @@
 </head>
 <body>
   <!-- Root-Container: blauer Verlauf + Safe-Area-Padding -->
-  <div id="app" class="bg-gradient safe-area text-white h-full overflow-hidden">
+  <div id="app" class="bg-gradient safe-area text-white overflow-hidden">
 
     <!-- Ladebildschirm – wird beim Start angezeigt, bis Daten verfügbar sind -->
-    <div id="loading" class="flex flex-col items-center justify-center h-full px-6">
+    <div id="loading" class="flex flex-col items-center justify-center app-height px-6">
       <p class="text-xl" style="opacity:0.8;">Wetterdaten werden geladen…</p>
     </div>
 
     <!-- Fehleranzeige – wird nur bei kritischen Fehlern ohne Cache sichtbar -->
-    <div id="error" class="hidden flex flex-col items-center justify-center h-full px-6">
+    <div id="error" class="hidden flex flex-col items-center justify-center app-height px-6">
       <p class="text-xl mb-2">Fehler</p>
       <p id="error-message" class="text-base text-center" style="opacity:0.7;"></p>
     </div>
 
     <!-- Hauptinhalt – Flexbox-Layout, füllt den Viewport exakt -->
-    <div id="content" class="hidden flex flex-col h-full px-6 overflow-hidden">
+    <div id="content" class="hidden flex flex-col app-height px-6 overflow-hidden">
 
       <!-- Oberer Bereich: aktuelles Wetter (feste Größe, schrumpft nicht) -->
       <div class="shrink-0">
@@ -365,6 +372,16 @@
         showError(reason + ' Keine gespeicherten Daten verfügbar.');
       }
     }
+
+    // ============================================================
+    // iOS-Viewport-Fix: tatsächliche Höhe messen und als CSS-Variable setzen
+    // window.innerHeight liefert die korrekte Höhe auch im Home-Screen-Modus
+    // ============================================================
+    function setAppHeight() {
+      document.documentElement.style.setProperty('--app-height', window.innerHeight + 'px');
+    }
+    window.addEventListener('resize', setAppHeight);
+    setAppHeight();
 
     // App starten
     init();
