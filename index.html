@@ -72,34 +72,29 @@
     <!-- Hauptinhalt – füllt den verbleibenden Platz nach Safe-Area-Padding -->
     <div id="content" class="hidden flex-1 px-6 overflow-hidden">
 
-      <!-- Oberer Bereich: aktuelles Wetter -->
-      <div>
-        <!-- Standortname -->
-        <p id="location-name" class="text-center text-base mb-1" style="opacity:0.7;"></p>
+      <!-- Standortname -->
+      <p id="location-name" class="text-center text-base mb-1" style="opacity:0.7;"></p>
 
-        <!-- Hinweis auf gecachte Daten bei Offline-Nutzung -->
-        <p id="cache-hint" class="hidden text-center text-sm mb-1" style="opacity:0.5;">Gespeicherte Daten</p>
+      <!-- Hinweis auf gecachte Daten bei Offline-Nutzung -->
+      <p id="cache-hint" class="hidden text-center text-sm mb-1" style="opacity:0.5;">Gespeicherte Daten</p>
 
-        <!-- Aktuelles Wetter: große Temperatur + Icon -->
-        <div class="flex items-center justify-center mt-4 mb-2">
-          <span id="current-icon" class="text-6xl mr-4"></span>
-          <span id="current-temp" class="text-8xl font-thin tracking-tighter"></span>
-        </div>
-
-        <!-- Wetterbeschreibung -->
-        <p id="current-desc" class="text-center text-lg mb-4" style="opacity:0.8;"></p>
-
-        <!-- Metazeile: Regenwahrscheinlichkeit und Windgeschwindigkeit -->
-        <div class="flex justify-center gap-8 mb-6">
-          <span id="current-rain" class="text-base" style="opacity:0.6;"></span>
-          <span id="current-wind" class="text-base" style="opacity:0.6;"></span>
-        </div>
-
-        <!-- Abschnittstitel für die 7-Tage-Vorschau -->
-        <p class="text-sm uppercase tracking-widest mb-3" style="opacity:0.5;">7-Tage-Vorschau</p>
+      <!-- Aktuelles Wetter: große Temperatur + Icon -->
+      <div class="flex items-center justify-center mt-4 mb-2">
+        <span id="current-icon" class="text-6xl mr-4"></span>
+        <span id="current-temp" class="text-8xl font-thin tracking-tighter"></span>
       </div>
 
-      <!-- Unterer Bereich: 7-Tage-Zeilen verteilen sich gleichmäßig über den restlichen Platz -->
+      <!-- Wetterbeschreibung -->
+      <p id="current-desc" class="text-center text-lg mb-4" style="opacity:0.8;"></p>
+
+      <!-- Metazeile: Regenwahrscheinlichkeit und Windgeschwindigkeit -->
+      <div class="flex justify-center gap-8 mb-6">
+        <span id="current-rain" class="text-base" style="opacity:0.6;"></span>
+        <span id="current-wind" class="text-base" style="opacity:0.6;"></span>
+      </div>
+
+      <!-- 7-Tage-Vorschau -->
+      <p class="text-sm uppercase tracking-widest mb-3" style="opacity:0.5;">7-Tage-Vorschau</p>
       <div id="forecast"></div>
     </div>
   </div>
@@ -145,7 +140,6 @@
     // Wochentag-Namen für die 7-Tage-Vorschau
     // ============================================================
     const WOCHENTAGE = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
-    const WOCHENTAGE_LANG = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
 
     // ============================================================
     // Hilfsfunktion: WMO-Code in Icon und Beschreibung umwandeln
@@ -202,14 +196,9 @@
     }
 
     // ============================================================
-    // Reverse Geocoding über Open-Meteo Geocoding API
-    // Wandelt Koordinaten in einen lesbaren Ortsnamen um
+    // Reverse Geocoding: Koordinaten → Ortsname via Nominatim
     // ============================================================
     function fetchLocationName(lat, lon) {
-      const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m&timezone=auto';
-      // Der Ortsname wird aus der timezone abgeleitet, da Open-Meteo
-      // keinen dedizierten Reverse-Geocoding-Endpunkt bietet.
-      // Alternativ wird der Name über die Nominatim-API geholt.
       return fetch('https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lon + '&format=json&accept-language=de')
         .then(function(r) { return r.json(); })
         .then(function(data) {
