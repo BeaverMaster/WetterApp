@@ -95,7 +95,7 @@
     // Open-Meteo liefert numerische Wettercodes nach WMO-Standard.
     // Hier werden sie auf verständliche Icons und Beschreibungen gemappt.
     // ============================================================
-    var WMO_CODES = {
+    const WMO_CODES = {
       0:  { icon: '☀️', desc: 'Klar' },
       1:  { icon: '🌤️', desc: 'Überwiegend klar' },
       2:  { icon: '⛅', desc: 'Teilweise bewölkt' },
@@ -129,8 +129,8 @@
     // ============================================================
     // Wochentag-Namen für die 7-Tage-Vorschau
     // ============================================================
-    var WOCHENTAGE = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
-    var WOCHENTAGE_LANG = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+    const WOCHENTAGE = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+    const WOCHENTAGE_LANG = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
 
     // ============================================================
     // Hilfsfunktion: WMO-Code in Icon und Beschreibung umwandeln
@@ -143,7 +143,7 @@
     // ============================================================
     // LocalStorage-Schlüssel für den Offline-Cache
     // ============================================================
-    var CACHE_KEY = 'wetter_app_cache';
+    const CACHE_KEY = 'wetter_app_cache';
 
     // Daten im LocalStorage speichern – wird bei jedem erfolgreichen Abruf aufgerufen
     function saveToCache(data) {
@@ -157,7 +157,7 @@
     // Gespeicherte Daten aus LocalStorage laden
     function loadFromCache() {
       try {
-        var cached = localStorage.getItem(CACHE_KEY);
+        const cached = localStorage.getItem(CACHE_KEY);
         return cached ? JSON.parse(cached) : null;
       } catch (e) {
         return null;
@@ -191,7 +191,7 @@
     // Wandelt Koordinaten in einen lesbaren Ortsnamen um
     // ============================================================
     function fetchLocationName(lat, lon) {
-      var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m&timezone=auto';
+      const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m&timezone=auto';
       // Der Ortsname wird aus der timezone abgeleitet, da Open-Meteo
       // keinen dedizierten Reverse-Geocoding-Endpunkt bietet.
       // Alternativ wird der Name über die Nominatim-API geholt.
@@ -213,7 +213,7 @@
     // Nutzt aktuelle Wetterdaten + 7-Tage-Tagesvorhersage
     // ============================================================
     function fetchWeather(lat, lon) {
-      var url = 'https://api.open-meteo.com/v1/forecast'
+      const url = 'https://api.open-meteo.com/v1/forecast'
         + '?latitude=' + lat
         + '&longitude=' + lon
         + '&current=temperature_2m,weather_code,wind_speed_10m'
@@ -231,9 +231,9 @@
     // Rendering: Wetterdaten in die HTML-Elemente schreiben
     // ============================================================
     function renderWeather(data, locationName, fromCache) {
-      var current = data.current;
-      var daily = data.daily;
-      var weatherInfo = getWeatherInfo(current.weather_code);
+      const current = data.current;
+      const daily = data.daily;
+      const weatherInfo = getWeatherInfo(current.weather_code);
 
       // Standortname anzeigen
       document.getElementById('location-name').textContent = locationName;
@@ -253,24 +253,24 @@
       document.getElementById('current-desc').textContent = weatherInfo.desc;
 
       // Metazeile: Regenwahrscheinlichkeit des heutigen Tages + Wind
-      var todayRain = daily.precipitation_probability_max[0];
+      const todayRain = daily.precipitation_probability_max[0];
       document.getElementById('current-rain').textContent = '💧 ' + todayRain + '% Regen';
       document.getElementById('current-wind').textContent = '💨 ' + Math.round(current.wind_speed_10m) + ' km/h';
 
       // 7-Tage-Vorschau aufbauen
-      var forecastContainer = document.getElementById('forecast');
+      const forecastContainer = document.getElementById('forecast');
       forecastContainer.innerHTML = '';
 
-      for (var i = 0; i < 7; i++) {
-        var date = new Date(daily.time[i]);
-        var dayName = (i === 0) ? 'Heute' : WOCHENTAGE[date.getDay()];
-        var info = getWeatherInfo(daily.weather_code[i]);
-        var tempMax = Math.round(daily.temperature_2m_max[i]);
-        var tempMin = Math.round(daily.temperature_2m_min[i]);
-        var rain = daily.precipitation_probability_max[i];
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(daily.time[i]);
+        const dayName = (i === 0) ? 'Heute' : WOCHENTAGE[date.getDay()];
+        const info = getWeatherInfo(daily.weather_code[i]);
+        const tempMax = Math.round(daily.temperature_2m_max[i]);
+        const tempMin = Math.round(daily.temperature_2m_min[i]);
+        const rain = daily.precipitation_probability_max[i];
 
         // Jede Zeile: Wochentag | Icon | Temperaturbereich | Regenwahrscheinlichkeit
-        var row = document.createElement('div');
+        const row = document.createElement('div');
         row.className = 'flex items-center justify-between py-3' + (i < 6 ? ' divider' : '');
 
         row.innerHTML =
@@ -300,8 +300,8 @@
 
       navigator.geolocation.getCurrentPosition(
         function(position) {
-          var lat = position.coords.latitude;
-          var lon = position.coords.longitude;
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
 
           // Wetterdaten und Ortsnamen parallel abrufen
           Promise.all([
@@ -309,8 +309,8 @@
             fetchLocationName(lat, lon)
           ])
           .then(function(results) {
-            var weatherData = results[0];
-            var locationName = results[1];
+            const weatherData = results[0];
+            const locationName = results[1];
 
             // Erfolgreiche Daten im Cache speichern
             saveToCache({
@@ -343,7 +343,7 @@
     // Offline-Fallback: gespeicherte Daten laden oder Fehler zeigen
     // ============================================================
     function handleOffline(reason) {
-      var cached = loadFromCache();
+      const cached = loadFromCache();
       if (cached && cached.weather) {
         // Gecachte Daten anzeigen mit Hinweis
         renderWeather(cached.weather, cached.location || 'Mein Standort', true);
