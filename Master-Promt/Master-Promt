@@ -12,11 +12,25 @@ ohne Kreativität, ohne Alternativen, ohne Annahmen.
 - KEIN Build-Step
 - KEINE externen JS-Libraries
 - GENAU EINE HTML-Datei als Output
-- KEINE Erklärungen, NUR Code
+- KEINE Erklärungen außerhalb des Codes
 - KEINE optionalen Features
-- KEINE Kommentare außerhalb des Codes
 
 Wenn eine Regel verletzt wird → Output ist falsch.
+
+📝 KOMMENTAR-REGELN (NEU – VERBINDLICH)
+
+- Der Code MUSS gut kommentiert sein
+- Kommentare AUSSCHLIESSLICH:
+  - im HTML
+  - im CSS
+  - im JavaScript
+- Sprache der Kommentare: DEUTSCH
+- Jeder relevante Block erklärt:
+  - WAS hier passiert
+  - WARUM dieser Code notwendig ist
+- KEINE redundanten Kommentare (z. B. „Variable wird gesetzt“)
+- KEINE Tutorials
+- KEINE Meta-Erklärungen
 
 🎯 ZIEL DER APP
 
@@ -55,17 +69,40 @@ Die HTML-Datei MUSS enthalten:
 - Touch-optimierte UI
 - Kein Hover-UI
 
-🎨 DESIGN-CONSTRAINTS
+🎨 DESIGN-CONSTRAINTS (REFERENZBILD)
 
-- Tailwind CSS via CDN
-- Stil: neutral, ruhig, funktional
-- KEINE:
-  - Animationen
-  - Glas-Effekte
-  - Dark/Light-Toggle
-  - Themes
-- Fokus: Lesbarkeit + Klarheit
-- Mobile-First, iPhone-only
+- Dominanter blauer Hintergrund
+- Sanfter vertikaler Blau-Verlauf
+- KEINE weißen Flächen
+- Text überwiegend weiß
+- Sekundäre Texte mit reduzierter Opacity
+
+LAYOUT
+- Einspaltiges Dashboard
+- Große Temperatur zentriert oben
+- Wetter-Icon neben der Temperatur
+- Metazeile (Regen | Wind)
+- 7-Tage-Liste mit:
+  - Wochentag
+  - Icon
+  - Temperatur
+  - Regenwahrscheinlichkeit
+
+VISUELLES
+- KEINE Cards
+- KEINE Schatten
+- KEINE Borders
+- Trennung nur durch Abstände / sehr subtile Divider
+
+TYPOGRAFIE
+- Systemschrift (-apple-system)
+- Große, klare Temperaturanzeige
+- Ruhige, iOS-nahe Text-Hierarchie
+
+BEWEGUNG
+- KEINE Animationen
+- KEINE Transitions
+- KEINE Effekte
 
 🗂️ TECHNISCHE STRUKTUR (ERZWUNGEN)
 
@@ -76,23 +113,21 @@ Die HTML-Datei MUSS enthalten:
    - Tailwind CDN
    - Titel
 2. <body>
-   - Root-Container
+   - Root-Container mit blauem Verlauf
    - Bereich „Aktuelles Wetter“
    - Bereich „7-Tage-Vorschau“
 3. <script>
    - Geolocation-Logik
-   - Fetch Open-Meteo
+   - Open-Meteo Fetch
    - Fehlerbehandlung
    - LocalStorage-Caching
    - Rendering-Funktionen
 
-Alles sauber getrennt, keine Inline-Hacks.
-
-📦 OFFLINE-VERHALTEN (PFLICHT)
+📦 OFFLINE-VERHALTEN
 
 - Bei fehlendem Netzwerk:
   - Lade letzte gespeicherte Wetterdaten
-  - Zeige klar an, dass es sich um gecachte Daten handelt
+  - Zeige klar an, dass es gecachte Daten sind
 - KEIN Absturz
 - KEIN leeres UI
 
@@ -100,7 +135,6 @@ Alles sauber getrennt, keine Inline-Hacks.
 
 - Gib AUSSCHLIESSLICH den vollständigen HTML-Code aus
 - KEIN Markdown
-- KEINE Erklärungen
 - KEIN Text vor oder nach dem Code
 
 ENDE DES PROMPTS

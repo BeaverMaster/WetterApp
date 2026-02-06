@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <!-- iOS Home-Screen Web App Meta-Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-title" content="Wetter">
+  <title>Wetter</title>
+  <!-- Tailwind CSS via CDN – einzige externe Abhängigkeit -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Systemschrift für iOS-natives Erscheinungsbild */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      /* Verhindert Überlauf und sichert Fullscreen-Feeling */
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+    }
+
+    /* Blauer Verlauf als Haupthintergrund der gesamten App */
+    .bg-gradient {
+      background: linear-gradient(180deg, #1e3a8a 0%, #2563eb 50%, #3b82f6 100%);
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+    }
+
+    /* Safe-Area-Insets für iPhone-Notch und Home-Indicator */
+    .safe-area {
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+
+    /* Subtiler Trenner zwischen Tageszeilen */
+    .divider {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <!-- Root-Container: blauer Verlauf + Safe-Area-Padding -->
+  <div id="app" class="bg-gradient safe-area text-white">
+
+    <!-- Ladebildschirm – wird beim Start angezeigt, bis Daten verfügbar sind -->
+    <div id="loading" class="flex flex-col items-center justify-center min-h-screen px-6">
+      <p class="text-xl" style="opacity:0.8;">Wetterdaten werden geladen…</p>
+    </div>
+
+    <!-- Fehleranzeige – wird nur bei kritischen Fehlern ohne Cache sichtbar -->
+    <div id="error" class="hidden flex flex-col items-center justify-center min-h-screen px-6">
+      <p class="text-xl mb-2">Fehler</p>
+      <p id="error-message" class="text-base text-center" style="opacity:0.7;"></p>
+    </div>
+
+    <!-- Hauptinhalt – einspaltiges Dashboard-Layout -->
+    <div id="content" class="hidden min-h-screen px-6 pt-12 pb-8">
+
+      <!-- Standortname -->
+      <p id="location-name" class="text-center text-base mb-1" style="opacity:0.7;"></p>
+
+      <!-- Hinweis auf gecachte Daten bei Offline-Nutzung -->
+      <p id="cache-hint" class="hidden text-center text-sm mb-2" style="opacity:0.5;">Gespeicherte Daten</p>
+
+      <!-- Aktuelles Wetter: große Temperatur + Icon -->
+      <div class="flex items-center justify-center mt-4 mb-2">
+        <span id="current-icon" class="text-6xl mr-4"></span>
+        <span id="current-temp" class="text-8xl font-thin tracking-tighter"></span>
+      </div>
+
+      <!-- Wetterbeschreibung -->
+      <p id="current-desc" class="text-center text-lg mb-4" style="opacity:0.8;"></p>
+
+      <!-- Metazeile: Regenwahrscheinlichkeit und Windgeschwindigkeit -->
+      <div class="flex justify-center gap-8 mb-10">
+        <span id="current-rain" class="text-base" style="opacity:0.6;"></span>
+        <span id="current-wind" class="text-base" style="opacity:0.6;"></span>
+      </div>
+
+      <!-- Abschnittstitel für die 7-Tage-Vorschau -->
+      <p class="text-sm uppercase tracking-widest mb-4" style="opacity:0.5;">7-Tage-Vorschau</p>
+
+      <!-- Container für die Tageszeilen – wird per JS befüllt -->
+      <div id="forecast"></div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    // WMO-Wettercodes → Emoji-Zuordnung
+    // Open-Meteo liefert numerische Wettercodes nach WMO-Standard.
+    // Hier werden sie auf verständliche Icons und Beschreibungen gemappt.
+    // ============================================================
+    var WMO_CODES = {
+      0:  { icon: '☀️', desc: 'Klar' },
+      1:  { icon: '🌤️', desc: 'Überwiegend klar' },
+      2:  { icon: '⛅', desc: 'Teilweise bewölkt' },
+      3:  { icon: '☁️', desc: 'Bewölkt' },
+      45: { icon: '🌫️', desc: 'Nebel' },
+      48: { icon: '🌫️', desc: 'Raureif-Nebel' },
+      51: { icon: '🌧️', desc: 'Leichter Nieselregen' },
+      53: { icon: '🌧️', desc: 'Nieselregen' },
+      55: { icon: '🌧️', desc: 'Starker Nieselregen' },
+      56: { icon: '🌧️', desc: 'Gefrierender Nieselregen' },
+      57: { icon: '🌧️', desc: 'Starker gefr. Nieselregen' },
+      61: { icon: '🌧️', desc: 'Leichter Regen' },
+      63: { icon: '🌧️', desc: 'Regen' },
+      65: { icon: '🌧️', desc: 'Starker Regen' },
+      66: { icon: '🌧️', desc: 'Gefrierender Regen' },
+      67: { icon: '🌧️', desc: 'Starker gefr. Regen' },
+      71: { icon: '❄️', desc: 'Leichter Schneefall' },
+      73: { icon: '❄️', desc: 'Schneefall' },
+      75: { icon: '❄️', desc: 'Starker Schneefall' },
+      77: { icon: '❄️', desc: 'Schneegriesel' },
+      80: { icon: '🌦️', desc: 'Leichte Regenschauer' },
+      81: { icon: '🌦️', desc: 'Regenschauer' },
+      82: { icon: '🌦️', desc: 'Heftige Regenschauer' },
+      85: { icon: '🌨️', desc: 'Leichte Schneeschauer' },
+      86: { icon: '🌨️', desc: 'Schneeschauer' },
+      95: { icon: '⛈️', desc: 'Gewitter' },
+      96: { icon: '⛈️', desc: 'Gewitter mit leichtem Hagel' },
+      99: { icon: '⛈️', desc: 'Gewitter mit Hagel' }
+    };
+
+    // ============================================================
+    // Wochentag-Namen für die 7-Tage-Vorschau
+    // ============================================================
+    var WOCHENTAGE = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+    var WOCHENTAGE_LANG = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+
+    // ============================================================
+    // Hilfsfunktion: WMO-Code in Icon und Beschreibung umwandeln
+    // Fallback auf Fragezeichen, falls ein unbekannter Code kommt
+    // ============================================================
+    function getWeatherInfo(code) {
+      return WMO_CODES[code] || { icon: '❓', desc: 'Unbekannt' };
+    }
+
+    // ============================================================
+    // LocalStorage-Schlüssel für den Offline-Cache
+    // ============================================================
+    var CACHE_KEY = 'wetter_app_cache';
+
+    // Daten im LocalStorage speichern – wird bei jedem erfolgreichen Abruf aufgerufen
+    function saveToCache(data) {
+      try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+      } catch (e) {
+        // Storage voll oder nicht verfügbar – stilles Versagen, da nicht kritisch
+      }
+    }
+
+    // Gespeicherte Daten aus LocalStorage laden
+    function loadFromCache() {
+      try {
+        var cached = localStorage.getItem(CACHE_KEY);
+        return cached ? JSON.parse(cached) : null;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    // ============================================================
+    // UI-Steuerung: zwischen Lade-, Fehler- und Inhaltsansicht wechseln
+    // ============================================================
+    function showLoading() {
+      document.getElementById('loading').classList.remove('hidden');
+      document.getElementById('error').classList.add('hidden');
+      document.getElementById('content').classList.add('hidden');
+    }
+
+    function showError(msg) {
+      document.getElementById('loading').classList.add('hidden');
+      document.getElementById('error').classList.remove('hidden');
+      document.getElementById('content').classList.add('hidden');
+      document.getElementById('error-message').textContent = msg;
+    }
+
+    function showContent() {
+      document.getElementById('loading').classList.add('hidden');
+      document.getElementById('error').classList.add('hidden');
+      document.getElementById('content').classList.remove('hidden');
+    }
+
+    // ============================================================
+    // Reverse Geocoding über Open-Meteo Geocoding API
+    // Wandelt Koordinaten in einen lesbaren Ortsnamen um
+    // ============================================================
+    function fetchLocationName(lat, lon) {
+      var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m&timezone=auto';
+      // Der Ortsname wird aus der timezone abgeleitet, da Open-Meteo
+      // keinen dedizierten Reverse-Geocoding-Endpunkt bietet.
+      // Alternativ wird der Name über die Nominatim-API geholt.
+      return fetch('https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lon + '&format=json&accept-language=de')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data && data.address) {
+            return data.address.city || data.address.town || data.address.village || data.address.municipality || 'Mein Standort';
+          }
+          return 'Mein Standort';
+        })
+        .catch(function() {
+          return 'Mein Standort';
+        });
+    }
+
+    // ============================================================
+    // Wetterdaten von Open-Meteo abrufen
+    // Nutzt aktuelle Wetterdaten + 7-Tage-Tagesvorhersage
+    // ============================================================
+    function fetchWeather(lat, lon) {
+      var url = 'https://api.open-meteo.com/v1/forecast'
+        + '?latitude=' + lat
+        + '&longitude=' + lon
+        + '&current=temperature_2m,weather_code,wind_speed_10m'
+        + '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max'
+        + '&timezone=auto';
+
+      return fetch(url)
+        .then(function(response) {
+          if (!response.ok) throw new Error('API-Fehler: ' + response.status);
+          return response.json();
+        });
+    }
+
+    // ============================================================
+    // Rendering: Wetterdaten in die HTML-Elemente schreiben
+    // ============================================================
+    function renderWeather(data, locationName, fromCache) {
+      var current = data.current;
+      var daily = data.daily;
+      var weatherInfo = getWeatherInfo(current.weather_code);
+
+      // Standortname anzeigen
+      document.getElementById('location-name').textContent = locationName;
+
+      // Cache-Hinweis ein-/ausblenden
+      if (fromCache) {
+        document.getElementById('cache-hint').classList.remove('hidden');
+      } else {
+        document.getElementById('cache-hint').classList.add('hidden');
+      }
+
+      // Aktuelle Temperatur – gerundet, mit Grad-Symbol
+      document.getElementById('current-temp').textContent = Math.round(current.temperature_2m) + '°';
+
+      // Wetter-Icon und Beschreibung
+      document.getElementById('current-icon').textContent = weatherInfo.icon;
+      document.getElementById('current-desc').textContent = weatherInfo.desc;
+
+      // Metazeile: Regenwahrscheinlichkeit des heutigen Tages + Wind
+      var todayRain = daily.precipitation_probability_max[0];
+      document.getElementById('current-rain').textContent = '💧 ' + todayRain + '% Regen';
+      document.getElementById('current-wind').textContent = '💨 ' + Math.round(current.wind_speed_10m) + ' km/h';
+
+      // 7-Tage-Vorschau aufbauen
+      var forecastContainer = document.getElementById('forecast');
+      forecastContainer.innerHTML = '';
+
+      for (var i = 0; i < 7; i++) {
+        var date = new Date(daily.time[i]);
+        var dayName = (i === 0) ? 'Heute' : WOCHENTAGE[date.getDay()];
+        var info = getWeatherInfo(daily.weather_code[i]);
+        var tempMax = Math.round(daily.temperature_2m_max[i]);
+        var tempMin = Math.round(daily.temperature_2m_min[i]);
+        var rain = daily.precipitation_probability_max[i];
+
+        // Jede Zeile: Wochentag | Icon | Temperaturbereich | Regenwahrscheinlichkeit
+        var row = document.createElement('div');
+        row.className = 'flex items-center justify-between py-3' + (i < 6 ? ' divider' : '');
+
+        row.innerHTML =
+          '<span class="w-12 text-base">' + dayName + '</span>' +
+          '<span class="text-2xl w-10 text-center">' + info.icon + '</span>' +
+          '<span class="flex-1 text-right text-base" style="opacity:0.6;">' + rain + '% 💧</span>' +
+          '<span class="w-24 text-right text-base">' + tempMin + '° / ' + tempMax + '°</span>';
+
+        forecastContainer.appendChild(row);
+      }
+
+      showContent();
+    }
+
+    // ============================================================
+    // Hauptablauf: Standort ermitteln → Wetter abrufen → Anzeigen
+    // Bei Fehler: auf Cache zurückfallen
+    // ============================================================
+    function init() {
+      showLoading();
+
+      // Prüfen, ob Geolocation verfügbar ist
+      if (!navigator.geolocation) {
+        handleOffline('Geolocation wird nicht unterstützt.');
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        function(position) {
+          var lat = position.coords.latitude;
+          var lon = position.coords.longitude;
+
+          // Wetterdaten und Ortsnamen parallel abrufen
+          Promise.all([
+            fetchWeather(lat, lon),
+            fetchLocationName(lat, lon)
+          ])
+          .then(function(results) {
+            var weatherData = results[0];
+            var locationName = results[1];
+
+            // Erfolgreiche Daten im Cache speichern
+            saveToCache({
+              weather: weatherData,
+              location: locationName,
+              timestamp: Date.now()
+            });
+
+            renderWeather(weatherData, locationName, false);
+          })
+          .catch(function() {
+            // Netzwerkfehler → auf Cache zurückfallen
+            handleOffline('Keine Verbindung zur Wetter-API.');
+          });
+        },
+        function(err) {
+          // Standort verweigert oder nicht verfügbar → Cache nutzen
+          handleOffline('Standort konnte nicht ermittelt werden.');
+        },
+        {
+          // Hohe Genauigkeit für GPS, Timeout nach 10 Sekunden
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 300000 // Maximal 5 Minuten alte Position akzeptieren
+        }
+      );
+    }
+
+    // ============================================================
+    // Offline-Fallback: gespeicherte Daten laden oder Fehler zeigen
+    // ============================================================
+    function handleOffline(reason) {
+      var cached = loadFromCache();
+      if (cached && cached.weather) {
+        // Gecachte Daten anzeigen mit Hinweis
+        renderWeather(cached.weather, cached.location || 'Mein Standort', true);
+      } else {
+        // Kein Cache vorhanden → Fehler anzeigen
+        showError(reason + ' Keine gespeicherten Daten verfügbar.');
+      }
+    }
+
+    // App starten
+    init();
+  </script>
+</body>
+</html>
