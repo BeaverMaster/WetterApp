@@ -68,7 +68,7 @@
     </div>
 
     <!-- Hauptinhalt – Flexbox-Layout, füllt den Viewport exakt -->
-    <div id="content" class="hidden flex flex-col h-full px-6 pt-12 pb-8 overflow-hidden">
+    <div id="content" class="hidden flex flex-col h-full px-6 pt-8 pb-12 overflow-hidden">
 
       <!-- Oberer Bereich: aktuelles Wetter (feste Größe, schrumpft nicht) -->
       <div class="shrink-0">
@@ -76,25 +76,25 @@
         <p id="location-name" class="text-center text-base mb-1" style="opacity:0.7;"></p>
 
         <!-- Hinweis auf gecachte Daten bei Offline-Nutzung -->
-        <p id="cache-hint" class="hidden text-center text-sm mb-2" style="opacity:0.5;">Gespeicherte Daten</p>
+        <p id="cache-hint" class="hidden text-center text-sm mb-1" style="opacity:0.5;">Gespeicherte Daten</p>
 
         <!-- Aktuelles Wetter: große Temperatur + Icon -->
-        <div class="flex items-center justify-center mt-4 mb-2">
-          <span id="current-icon" class="text-6xl mr-4"></span>
-          <span id="current-temp" class="text-8xl font-thin tracking-tighter"></span>
+        <div class="flex items-center justify-center mt-2 mb-1">
+          <span id="current-icon" class="text-5xl mr-3"></span>
+          <span id="current-temp" class="text-7xl font-thin tracking-tighter"></span>
         </div>
 
         <!-- Wetterbeschreibung -->
-        <p id="current-desc" class="text-center text-lg mb-4" style="opacity:0.8;"></p>
+        <p id="current-desc" class="text-center text-base mb-2" style="opacity:0.8;"></p>
 
         <!-- Metazeile: Regenwahrscheinlichkeit und Windgeschwindigkeit -->
-        <div class="flex justify-center gap-8 mb-6">
-          <span id="current-rain" class="text-base" style="opacity:0.6;"></span>
-          <span id="current-wind" class="text-base" style="opacity:0.6;"></span>
+        <div class="flex justify-center gap-8 mb-4">
+          <span id="current-rain" class="text-sm" style="opacity:0.6;"></span>
+          <span id="current-wind" class="text-sm" style="opacity:0.6;"></span>
         </div>
 
         <!-- Abschnittstitel für die 7-Tage-Vorschau -->
-        <p class="text-sm uppercase tracking-widest mb-3" style="opacity:0.5;">7-Tage-Vorschau</p>
+        <p class="text-sm uppercase tracking-widest mb-2" style="opacity:0.5;">7-Tage-Vorschau</p>
       </div>
 
       <!-- Unterer Bereich: 7-Tage-Liste füllt den Rest, scrollt intern falls nötig -->
